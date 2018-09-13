@@ -12,4 +12,8 @@ class Config(object):
 
 	POSTS_PER_PAGE = 3
 
-
+	MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'localhost'
+	MAIL_PORT = os.environ.get('MAIL_PORT') or 587
+	MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') or 1
+	MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'jan.koscak@gmail.com'
+	MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'password'

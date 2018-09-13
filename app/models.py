@@ -1,9 +1,12 @@
 from datetime import datetime
 from hashlib import md5
+from jwt import encode, decode
+from time import time
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from app import app
 from app import db
 from app import login
 
@@ -52,6 +55,9 @@ class User(UserMixin, db.Model):
 	def check_password(self, password):
 		return check_password_hash(self.password_hash, password)
 
+	def get_reset_password_token(self, expires_in=60):
+		return encode({'reset_password': self.id, 'exp': time() + expires_in}, app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
+
 	def avatar(self, size):
 		digest = md5(self.email.lower().encode('utf-8')).hexdigest()
 		return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
@@ -66,6 +72,14 @@ class User(UserMixin, db.Model):
 
 	def is_following(self, user):
 		return self.followed.filter(followers.c.followed_id == user.id).count() > 0
+
+	@staticmethod
+	def verify_reset_password_token(token):
+		try:
+			user_id = decode(token, app.config['SECRET_KEY'], algorithms='HS256')['reset_password']
+		except:
+			return
+		return User.query.get(user_id)
 
 	def __repr__(self):
 		return f'<User {self.username}>'
